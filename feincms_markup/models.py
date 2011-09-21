@@ -25,11 +25,6 @@ class MarkupContent(models.Model):
 
     Page.create_content_type(MarkupContent)
     """
-    MARKUP_CHOICES = (
-        ('rst', 'RestructuredText'),
-        ('markdown', 'Markdown'),
-        ('textile', 'Textile')
-    )
     markup = models.TextField(_("Markup Text"), blank=False)
     markup_type = models.CharField(max_length=20, blank=False,
         choices=MARKUP_CHOICES)
@@ -60,6 +55,9 @@ class MarkupContent(models.Model):
             self.markup_type)(self.markup)
         return super(MarkupContent, self).save(*args, **kwargs)
 
+    def new_save(self, *args, **kwargs):
+        self.markup_html = get_markup_parser(self.markup_type).parser(self.markup)
+
     def render(self, request, **kwargs):
         context = RequestContext(request, {'content': self,})
         return render_to_string(self.template, context)
@@ -86,3 +84,18 @@ class MarkupContent(models.Model):
         #    request.POST.get('text'), request.POST.get('markup'),
         #    template.RequestContext(request, {'object': plugin,
         #        'placeholder': placeholder,}), placeholder))
+
+
+def get_markup_parser(markup_type):
+    parser_class = get_list_of_markup_classes(settings.MARKUP_TYPE_OPTIONS)
+    return markup_classes[markup_id]()
+
+import sys
+from .settings import MARKUP_TYPE_OPTIONS
+def get_markup_parsers(options=MARKUP_TYPE_OPTIONS):
+    objects = {}
+    for option in options:
+        __import__(option)
+        module = sys.modules[option]
+        objects[module.MarkupParser.name] = module.MarkupParser
+    return objects
