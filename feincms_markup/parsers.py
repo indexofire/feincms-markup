@@ -21,15 +21,15 @@ class MarkupParser(object):
         try:
             from docutils.core import publish_parts
             from docutils.parsers.rst import directives, Directive
-            from contrib.content.markup.directives.code import CodeHighlight
+            #from contrib.content.markup.directives.code import CodeHighlight
         except ImportError:
             if settings.DEBUG:
                 raise TemplateSyntaxError("Error in content type: The python "
                     "docutils library isn't installed.")
             return force_unicode(value)
         else:
-            if settings.MARKUP_CODE_HIGHTLIGHT:
-                directives.register_directive('code', CodeHighlight)
+            #if settings.MARKUP_CODE_HIGHTLIGHT:
+            #    directives.register_directive('code', CodeHighlight)
             docutils_settings = getattr(settings,
                 'RESTRUCTUREDTEXT_FILTER_SETTINGS', {},)
             parts = publish_parts(source=smart_str(value),

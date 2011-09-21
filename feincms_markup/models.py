@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_str, force_unicode
 from django.utils.safestring import mark_safe
-#from feincms_markup.forms import MarkupContentAdminForm
+from feincms_markup.forms import MarkupContentAdminForm
 from feincms_markup.parsers import MarkupParser
 
 
@@ -34,12 +34,12 @@ class MarkupContent(models.Model):
     markup_type = models.CharField(max_length=20, blank=False,
         choices=MARKUP_CHOICES)
     markup_html = models.TextField(blank=False)
-    template = 'markup/default.html'
+    template = 'feincms_markup/default.html'
     feincms_item_editor_form = MarkupContentAdminForm
     #feincms_item_editor_context_processors = (
     #    lambda x: dict(MARKITUP_JS_URL = settings.MARKITUP_JS_URL),
     #)
-    feincms_item_editor_includes = {'head': [ 'markup/init.html',],}
+    feincms_item_editor_includes = {'head': [ 'feincms_markup/init.html',],}
 
     class Meta:
         abstract = True
@@ -56,8 +56,8 @@ class MarkupContent(models.Model):
         #    'textile': lambda x: textile(x),
         #    }[self.markup_type](self.markup)
 
-        self.markup_html = getattr(MarkupParser(), self.markup_type,
-            'default')(self.markup)
+        self.markup_html = getattr(MarkupParser(),
+            self.markup_type)(self.markup)
         return super(MarkupContent, self).save(*args, **kwargs)
 
     def render(self, request, **kwargs):
@@ -65,7 +65,7 @@ class MarkupContent(models.Model):
         return render_to_string(self.template, context)
 
     def preview(self, request, **kwargs):
-        if request.method != 'POST'
+        if request.method != 'POST':
             return HttpResponseNotAllowed(['POST'])
 
         #try:
